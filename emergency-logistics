@@ -1,0 +1,77 @@
+(Defdomain emergency-logistics (
+
+  ;; --- OPERADORES (Acciones Atómicas) ---
+  
+  (:operator (!fly ?d ?from ?to)
+    ((at-drone ?d ?from))
+    ((at-drone ?d ?from))
+    ((at-drone ?d ?to)))
+
+  (:operator (!pick-up-left ?d ?c ?l)
+    ((at-drone ?d ?l) (at-crate ?c ?l) (arm-free-left ?d))
+    ((at-crate ?c ?l) (arm-free-left ?d))
+    ((holding-left ?d ?c)))
+
+  (:operator (!pick-up-right ?d ?c ?l)
+    ((at-drone ?d ?l) (at-crate ?c ?l) (arm-free-right ?d))
+    ((at-crate ?c ?l) (arm-free-right ?d))
+    ((holding-right ?d ?c)))
+
+  (:operator (!deliver-left ?d ?c ?p ?l ?ct)
+    ((at-drone ?d ?l) (at-person ?p ?l) (holding-left ?d ?c) (crate-content ?c ?ct))
+    ((holding-left ?d ?c) (necesita ?p ?ct))
+    ((person-has-content ?p ?ct) (arm-free-left ?d)))
+
+  (:operator (!deliver-right ?d ?c ?p ?l ?ct)
+    ((at-drone ?d ?l) (at-person ?p ?l) (holding-right ?d ?c) (crate-content ?c ?ct))
+    ((holding-right ?d ?c) (necesita ?p ?ct))
+    ((person-has-content ?p ?ct) (arm-free-right ?d)))
+
+  ;; --- MÉTODOS (Tareas Jerárquicas) ---
+
+  ;; Tarea principal: Enviar todo
+  (:method (enviar-todo)
+    ;; Caso 1: Buscar una necesidad pendiente y resolverla
+    hay-necesidades
+    ( (necesita ?p ?ct)
+      (at-person ?p ?lp)
+      (at-crate ?c ?lc)
+      (crate-content ?c ?ct)
+      (at-drone ?d ?ld)
+      (arm-free-left ?d) )
+    ( (satisfacer-necesidad ?d ?ld ?c ?lc ?p ?lp ?ct)
+      (enviar-todo) ) ;; Llamada recursiva
+
+    ;; Caso 2: Si no hay más necesidades, no hacer nada (terminar)
+    nada-mas-que-hacer
+    ()
+    ()
+  )
+
+  ;; Tarea para gestionar el movimiento y la entrega
+  (:method (satisfacer-necesidad ?d ?ld ?c ?lc ?p ?lp ?ct)
+    ;; Si el dron ya está donde la caja
+    en-el-sitio-de-la-caja
+    ((at-drone ?d ?lc))
+    ( (!pick-up-left ?d ?c ?lc) 
+      (ir-a-entregar ?d ?lc ?p ?lp ?c ?ct) )
+
+    ;; Si tiene que volar a por la caja
+    lejos-de-la-caja
+    ()
+    ( (!fly ?d ?ld ?lc) 
+      (!pick-up-left ?d ?c ?lc) 
+      (ir-a-entregar ?d ?lc ?p ?lp ?c ?ct) )
+  )
+
+  (:method (ir-a-entregar ?d ?from ?p ?to ?c ?ct)
+    ya-estoy-con-la-persona
+    ((at-drone ?d ?to))
+    ( (!deliver-left ?d ?c ?p ?to ?ct) )
+
+    tengo-que-volar-a-la-persona
+    ()
+    ( (!fly ?d ?from ?to) 
+      (!deliver-left ?d ?c ?p ?to ?ct) )
+  )
+))
