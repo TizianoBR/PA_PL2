@@ -175,11 +175,15 @@ def main():
     crates_with_contents = setup_content_types(options)
     need = setup_person_needs(options, crates_with_contents)
 
+<<<<<<< HEAD
     problem_name = options.output
+=======
+    problem_name = f"problem"
+>>>>>>> 461d323c6ef06f630fcfb44bdd285bb744dedafd
 
     with open(problem_name, 'w') as f:
         # Estructura SHOP2: (defproblem nombre_problema nombre_dominio (estado_inicial) (tareas))
-        f.write(f"(defproblem {problem_name} emergency-logistics\n")
+        f.write(f"(defproblem {problem_name} emergency_logistics\n")
         
         # --- ESTADO INICIAL ---
         f.write("  (\n")
