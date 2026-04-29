@@ -158,8 +158,7 @@ def main():
     parser.add_option('-p', '--persons', type=int, dest='persons', help='number of persons')
     parser.add_option('-c', '--crates', type=int, dest='crates', help='number of crates')
     parser.add_option('-g', '--goals', type=int, dest='goals', help='number of goals')
-    parser.add_option('-o', '--output', dest='output', default='problem', help='output problem file name')
-
+    
     (options, args) = parser.parse_args()
 
     # Validaciones básicas
@@ -175,11 +174,8 @@ def main():
     crates_with_contents = setup_content_types(options)
     need = setup_person_needs(options, crates_with_contents)
 
-<<<<<<< HEAD
-    problem_name = options.output
-=======
+
     problem_name = f"problem"
->>>>>>> 461d323c6ef06f630fcfb44bdd285bb744dedafd
 
     with open(problem_name, 'w') as f:
         # Estructura SHOP2: (defproblem nombre_problema nombre_dominio (estado_inicial) (tareas))

@@ -27,51 +27,115 @@
     ((holding-right ?d ?c) (necesita ?p ?ct))
     ((person-has-content ?p ?ct) (arm-free-right ?d)))
 
+  (:operator (!set-target ?p)
+    ((not (target ?p)))
+    ()
+    ((target ?p)))
+
+  (:operator (!clear-target ?p)
+    ((target ?p))
+    ((target ?p))
+    ())
+
   ;; --- MÉTODOS (Tareas Jerárquicas) ---
 
-  ;; Tarea principal: Enviar todo
+  ;;Tarea principal
   (:method (enviar-todo)
-    ;; Caso 1: Buscar una necesidad pendiente y resolverla
-    hay-necesidades
-    ( (necesita ?p ?ct)
-      (at-person ?p ?lp)
-      (at-crate ?c ?lc)
+    ((not (necesita ?p ?ct)))
+    ()
+
+    (
+      (at-drone ?d ?l)
+      (at-crate ?c ?l)
+    )
+    (
+      (seleccionar-persona ?d)
+      (seleccionar-persona ?d)
+      (entregar ?d)
+      (entregar ?d)
+
+      (enviar-todo)
+    )
+
+    (
+      (at-drone ?d ?l1)
+      (at-crate ?c ?l2)
+    )
+    (
+      (!fly ?d ?l1 ?l2)
+      (enviar-todo)
+    )
+  )
+
+  ;;Elegir a qué persona se va a entragar una caja y coger una caja válida
+  (:method (seleccionar-persona ?d)
+    (
+      (at-drone ?d ?l)
+      (at-crate ?c ?l)
       (crate-content ?c ?ct)
-      (at-drone ?d ?ld)
-      (arm-free-left ?d) )
-    ( (satisfacer-necesidad ?d ?ld ?c ?lc ?p ?lp ?ct)
-      (enviar-todo) ) ;; Llamada recursiva
-
-    ;; Caso 2: Si no hay más necesidades, no hacer nada (terminar)
-    nada-mas-que-hacer
-    ()
-    ()
+      (necesita ?p ?ct)
+      (not (target ?p))
+      (arm-free-left ?d)
+    )
+    (
+      (!set-target ?p) (!pick-up-left ?d ?c ?l)
+    )
+    (
+      (at-drone ?d ?l)
+      (at-crate ?c ?l)
+      (crate-content ?c ?ct)
+      (necesita ?p ?ct)
+      (not (target ?p))
+      (arm-free-right ?d)
+    )
+    (
+      (!set-target ?p) (!pick-up-right ?d ?c ?l)
+    )
   )
 
-  ;; Tarea para gestionar el movimiento y la entrega
-  (:method (satisfacer-necesidad ?d ?ld ?c ?lc ?p ?lp ?ct)
-    ;; Si el dron ya está donde la caja
-    en-el-sitio-de-la-caja
-    ((at-drone ?d ?lc))
-    ( (!pick-up-left ?d ?c ?lc) 
-      (ir-a-entregar ?d ?lc ?p ?lp ?c ?ct) )
+  (:method (entregar ?d)
+    (
+      (holding-left ?d ?c)
+      (target ?p)
+      (necesita ?p ?ct)
+      (crate-content ?c ?ct)
+      (at-drone ?d ?l)
+      (at-person ?p ?l)
+    )
+    ((!deliver-left ?d ?c ?p ?l ?ct) (!clear-target ?p))
 
-    ;; Si tiene que volar a por la caja
-    lejos-de-la-caja
-    ()
-    ( (!fly ?d ?ld ?lc) 
-      (!pick-up-left ?d ?c ?lc) 
-      (ir-a-entregar ?d ?lc ?p ?lp ?c ?ct) )
-  )
+    (
+      (holding-left ?d ?c)
+      (target ?p)
+      (necesita ?p ?ct)
+      (crate-content ?c ?ct)
+      (at-drone ?d ?l1)
+      (at-person ?p ?l2)
+    )
+    (
+      (!fly ?d ?l1 ?l2) (!deliver-left ?d ?c ?p ?l2 ?ct) (!clear-target ?p)
+    )
 
-  (:method (ir-a-entregar ?d ?from ?p ?to ?c ?ct)
-    ya-estoy-con-la-persona
-    ((at-drone ?d ?to))
-    ( (!deliver-left ?d ?c ?p ?to ?ct) )
+    (
+      (holding-right ?d ?c)
+      (target ?p)
+      (necesita ?p ?ct)
+      (crate-content ?c ?ct)
+      (at-drone ?d ?l)
+      (at-person ?p ?l)
+    )
+    ((!deliver-right ?d ?c ?p ?l ?ct) (!clear-target ?p))
 
-    tengo-que-volar-a-la-persona
-    ()
-    ( (!fly ?d ?from ?to) 
-      (!deliver-left ?d ?c ?p ?to ?ct) )
+    (
+      (holding-right ?d ?c)
+      (target ?p)
+      (necesita ?p ?ct)
+      (crate-content ?c ?ct)
+      (at-drone ?d ?l1)
+      (at-person ?p ?l2)
+    )
+    (
+      (!fly ?d ?l1 ?l2) (!deliver-right ?d ?c ?p ?l2 ?ct) (!clear-target ?p)
+    )
   )
 ))
