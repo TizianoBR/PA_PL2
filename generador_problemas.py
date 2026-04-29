@@ -158,6 +158,7 @@ def main():
     parser.add_option('-p', '--persons', type=int, dest='persons', help='number of persons')
     parser.add_option('-c', '--crates', type=int, dest='crates', help='number of crates')
     parser.add_option('-g', '--goals', type=int, dest='goals', help='number of goals')
+    parser.add_option('-o', '--output', dest='output', default='problem', help='output problem file name')
 
     (options, args) = parser.parse_args()
 
@@ -174,9 +175,9 @@ def main():
     crates_with_contents = setup_content_types(options)
     need = setup_person_needs(options, crates_with_contents)
 
-    problem_name = f"problem_d{options.drones}_l{options.locations}_p{options.persons}_g{options.goals}"
+    problem_name = options.output
 
-    with open(problem_name + ".shp", 'w') as f:
+    with open(problem_name, 'w') as f:
         # Estructura SHOP2: (defproblem nombre_problema nombre_dominio (estado_inicial) (tareas))
         f.write(f"(defproblem {problem_name} emergency-logistics\n")
         
@@ -213,7 +214,7 @@ def main():
         f.write("  ((enviar-todo))\n")
         f.write(")\n")
 
-    print(f"Archivo generado con éxito: {problem_name}.shp")
+    print(f"Archivo generado con éxito: {problem_name}")
 
 if __name__ == '__main__':
     main()

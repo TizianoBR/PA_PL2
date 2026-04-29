@@ -1,4 +1,4 @@
-(defproblem problem_d2_l5_p10_g8 emergency-logistics
+(defproblem problem PA_PL2
   (
     (at-drone drone1 depot)
     (arm-free-left drone1)
